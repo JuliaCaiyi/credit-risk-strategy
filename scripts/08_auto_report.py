@@ -75,14 +75,18 @@ def check_numbers(text):
     allowed = set()
     for v in re.findall(r"-?\d+(?:\.\d+)?", json.dumps(facts, ensure_ascii=False)):
         x = float(v)
-        allowed |= {round(x, 4), round(x, 2), round(x, 1), round(x)}
-    text = re.sub(r"\d{4}-\d{2}", "", text)  # 去掉月份
-    found = re.findall(r"(?<![\w.])-?\d+(?:\.\d+)?", text)
+        for y in (x, abs(x)):  # 文字里常写"下降 0.73"，不带负号
+            allowed |= {round(y, 4), round(y, 2), round(y, 1), round(y)}
+    text = re.sub(r"\d{4}-\d{2}|\d{4}年\d{1,2}月", "", text)  # 去掉月份
+    text = re.sub(r"(?<=\d),(?=\d{3})", "", text)  # 去掉千位分隔符：30,241 -> 30241
+    text = re.sub(r"(?m)^\s*\d+[.、)]\s", "", text)  # 去掉行首的列表序号
+    # 注意不能用 \w：Python 里汉字也算 \w，会漏掉紧挨汉字的数字（如"近0.6个百分点"）
+    found = re.findall(r"(?<![A-Za-z0-9_.])-?\d+(?:\.\d+)?", text)
     bad = []
     for v in found:
         x = float(v)
-        if x in (1, 2, 3) or re.fullmatch(r"20\d\d", v):
-            continue  # 序号、年份
+        if re.fullmatch(r"20\d\d", v):
+            continue  # 年份
         if not any(abs(x - y) < 1e-9 for y in {round(x, 4), round(x, 2), round(x, 1), round(x)} & allowed):
             bad.append(v)
     return bad

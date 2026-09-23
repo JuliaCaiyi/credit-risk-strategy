@@ -22,7 +22,7 @@ gap = b["bad"].mean() - a["bad"].mean()
 VARS = ["fico", "dti", "inq_last_6mths", "annual_inc", "loan_amnt", "emp_length_yrs", "revol_util",
         "acc_open_past_24mths", "credit_age_months", "int_rate", "grade", "purpose",
         "home_ownership", "verification_status", "score"]
-CAT_VARS = {"grade", "purpose", "home_ownership", "verification_status"}
+CAT_VARS = ["grade", "purpose", "home_ownership", "verification_status"]  # 用列表而非集合，保证 prompt 每次顺序相同
 
 facts = {
     "bad_rate_2014": round(a["bad"].mean(), 4), "bad_rate_2015": round(b["bad"].mean(), 4),
@@ -89,15 +89,33 @@ def decompose(var):
     else:
         cuts = np.unique(np.nanquantile(a[var], np.linspace(0.1, 0.9, 9)))
         bins = [-np.inf] + list(cuts) + [np.inf]
-        ga = pd.cut(a[var], bins).astype(str).where(a[var].notna(), "NA")
-        gb = pd.cut(b[var], bins).astype(str).where(b[var].notna(), "NA")
+        # 组名前加序号，打印明细时能按数值从小到大排
+        labels = [f"{i:02d}: {itv}" for i, itv in enumerate(pd.IntervalIndex.from_breaks(bins))]
+        ga = pd.cut(a[var], bins, labels=labels).astype(str).where(a[var].notna(), "NA")
+        gb = pd.cut(b[var], bins, labels=labels).astype(str).where(b[var].notna(), "NA")
     ta = a.groupby(ga)["bad"].agg(["mean", "size"])
     tb = b.groupby(gb)["bad"].agg(["mean", "size"])
     t = ta.join(tb, lsuffix="_14", rsuffix="_15", how="outer").fillna(0)
     w14, w15 = t["size_14"] / t["size_14"].sum(), t["size_15"] / t["size_15"].sum()
     mix = ((w15 - w14) * t["mean_14"]).sum()
     rate = (w15 * (t["mean_15"] - t["mean_14"])).sum()
-    return mix, rate
+    return mix, rate, t
+
+
+def group_detail(var, t):
+    # 组内型假设的证据：同一组客户 2014 -> 2015 坏账率怎么变
+    # int_rate 的假设是"定价没跟上风险"，所以改看每个评级的平均利率和坏账率是否同向变化
+    if var == "int_rate":
+        g = pd.DataFrame({"avg_rate_2014": a.groupby("grade")["int_rate"].mean(),
+                          "avg_rate_2015": b.groupby("grade")["int_rate"].mean(),
+                          "bad_rate_2014": a.groupby("grade")["bad"].mean(),
+                          "bad_rate_2015": b.groupby("grade")["bad"].mean()})
+        g[["bad_rate_2014", "bad_rate_2015"]] *= 100
+        g.index.name = "grade"
+        return "每个 grade 的平均利率(%)与坏账率(%):\n" + g.round(2).to_string()
+    g = pd.DataFrame({"bad_rate_2014": t["mean_14"] * 100, "bad_rate_2015": t["mean_15"] * 100})
+    g.index.name = var
+    return f"按 {var} 分组的坏账率(%):\n" + g.round(2).to_string()
 
 
 rows = []
@@ -107,10 +125,20 @@ for h in hyps:
         rows.append({**h, "mix_effect_pp": np.nan, "within_effect_pp": np.nan, "mix_share": np.nan,
                      "verdict": "无法检验：变量不在数据中"})
         continue
-    mix, rate = decompose(v)
+    mix, rate, t = decompose(v)
     share = mix / gap
-    if v == "score":
-        verdict = "成立：同分数段坏账率上升" if rate / gap > 0.5 else "不成立"
+    # 假设分两类："客群构成变差"看结构效应；"同一组客户风险变高"（评级贬值、定价不足、核验失效等）看组内效应
+    claim = h.get("hypothesis", "") + h.get("mechanism", "")
+    within_claim = v == "score" or re.search(r"同一|同等|内部|组内|定价|贬值|甄别|未能有效|未被有效", claim) is not None
+    detail = group_detail(v, t) if within_claim else ""
+    if within_claim:
+        within_share = rate / gap
+        if within_share >= 0.5:
+            verdict = "成立（按组内效应判定）：同一组客户坏账率上升能解释主要部分"
+        elif within_share >= 0.2:
+            verdict = "部分成立（按组内效应判定）：有贡献但不是主因"
+        else:
+            verdict = "不成立（按组内效应判定）：同一组客户坏账率基本没变"
     elif share >= 0.3:
         verdict = "成立：客群结构变化能解释主要部分"
     elif share >= 0.1:
@@ -120,10 +148,10 @@ for h in hyps:
     else:
         verdict = "不成立：方向相反（按这个变量看，客群结构变化反而压低了坏账率）"
     rows.append({**h, "mix_effect_pp": mix * 100, "within_effect_pp": rate * 100,
-                 "mix_share": share, "verdict": verdict})
+                 "mix_share": share, "verdict": verdict, "detail": detail})
 
 res = pd.DataFrame(rows)
-res.to_csv("output/attribution_check.csv", index=False)
+res.drop(columns="detail").to_csv("output/attribution_check.csv", index=False)
 
 print(f"\n2015 vs 2014 坏账率: {a['bad'].mean():.2%} -> {b['bad'].mean():.2%}（+{gap * 100:.2f} 个百分点）")
 print(f"假设来源: {source}\n")
@@ -132,6 +160,8 @@ for _, r in res.iterrows():
     if pd.notna(r["mix_effect_pp"]):
         print(f"    结构效应 {r['mix_effect_pp']:+.2f}pp（占差距 {r['mix_share']:.0%}），组内效应 {r['within_effect_pp']:+.2f}pp")
     print(f"    结论: {r['verdict']}")
+    if isinstance(r.get("detail"), str) and r["detail"]:
+        print("    " + r["detail"].replace("\n", "\n    ") + "\n")
 ok = res["verdict"].str.startswith("成立").sum()
 part = res["verdict"].str.startswith("部分").sum()
 print(f"\n共 {len(res)} 条假设：成立 {ok} 条，部分成立 {part} 条，不成立或无法检验 {len(res) - ok - part} 条")
