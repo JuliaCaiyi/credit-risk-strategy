@@ -1,0 +1,5 @@
+variables: ['fico', 'annual_inc', 'installment_to_income', 'acc_open_past_24mths', 'dti', 'mort_acc', 'home_ownership', 'percent_bc_gt_75', 'inq_last_6mths', 'credit_age_months', 'verification_status', 'emp_length_yrs', 'revol_bal']
+train: AUC=0.6655 KS=0.2395
+test: AUC=0.6725 KS=0.2503
+score PSI train->test: 0.0019
+GBDT test: AUC=0.6886 KS=0.2740

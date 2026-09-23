@@ -1,0 +1,39 @@
+IV 排名:
+                           iv            status
+fico                   0.1351              keep
+annual_inc             0.0817              keep
+installment_to_income  0.0682              keep
+acc_open_past_24mths   0.0610              keep
+dti                    0.0524              keep
+num_tl_op_past_12m     0.0500  drop: correlated
+mort_acc               0.0476              keep
+loan_to_income         0.0446  drop: correlated
+home_ownership         0.0428              keep
+percent_bc_gt_75       0.0383              keep
+bc_util                0.0309  drop: correlated
+inq_last_6mths         0.0290              keep
+credit_age_months      0.0229              keep
+verification_status    0.0216              keep
+emp_length_yrs         0.0206              keep
+revol_bal              0.0202              keep
+purpose                0.0191      drop: low IV
+revol_util             0.0178      drop: low IV
+total_acc              0.0088      drop: low IV
+loan_amnt              0.0071      drop: low IV
+pub_rec                0.0039      drop: low IV
+pub_rec_bankruptcies   0.0034      drop: low IV
+delinq_2yrs            0.0024      drop: low IV
+ever_delinq            0.0015      drop: low IV
+open_acc               0.0004      drop: low IV
+
+入模变量 13 个: ['fico', 'annual_inc', 'installment_to_income', 'acc_open_past_24mths', 'dti', 'mort_acc', 'home_ownership', 'percent_bc_gt_75', 'inq_last_6mths', 'credit_age_months', 'verification_status', 'emp_length_yrs', 'revol_bal']
+因高度相关剔除: ['num_tl_op_past_12m', 'loan_to_income', 'bc_util']
+
+手算示例：inq_last_6mths（近 6 个月征信查询次数）
+                     n    bad   good  bad_rate  good_pct  bad_pct     woe  iv_part
+bin                                                                               
+00: (-inf, 0.0]  86569  10418  76151    0.1203    0.5430   0.4669  0.1509   0.0115
+01: (0.0, 1.0]   45833   6660  39173    0.1453    0.2793   0.2985 -0.0664   0.0013
+02: (1.0, 2.0]   18893   3191  15702    0.1689    0.1120   0.1430 -0.2449   0.0076
+03: (2.0, inf]   11275   2046   9229    0.1815    0.0658   0.0917 -0.3319   0.0086
+IV 合计 = 0.0290
