@@ -1,11 +1,11 @@
-SOURCE: offline preset
+SOURCE: Claude 网页版（prompt 与回答人工复制粘贴）
 
 SYSTEM:
 你是一名信贷风控策略分析师，擅长对坏账率变化做归因。
 
 PROMPT:
 以下是 Lending Club 36 期贷款 2014 年与 2015 年放款客群的汇总数据（JSON）：
-{"bad_rate_2014": 0.1373, "bad_rate_2015": 0.1489, "n_2014": 162570, "n_2015": 283026, "mean_by_year": {"fico": {"2014": 694.524, "2015": 695.642}, "dti": {"2014": 17.553, "2015": 18.475}, "inq_last_6mths": {"2014": 0.757, "2015": 0.578}, "annual_inc": {"2014": 72499.658, "2015": 74521.913}, "loan_amnt": {"2014": 12585.599, "2015": 12805.54}, "emp_length_yrs": {"2014": 5.941, "2015": 5.88}, "revol_util": {"2014": 54.033, "2015": 52.281}, "acc_open_past_24mths": {"2014": 4.363, "2015": 4.586}, "credit_age_months": {"2014": 196.93, "2015": 199.101}, "int_rate": {"2014": 12.465, "2015": 11.277}, "score": {"2014": 544.079, "2015": 544.546}}, "share_by_year": {"verification_status": {"2014": {"Source Verified": 0.374, "Not Verified": 0.365, "Verified": 0.262}, "2015": {"Source Verified": 0.421, "Not Verified": 0.294, "Verified": 0.285}}, "grade": {"2014": {"B": 0.329, "C": 0.271, "A": 0.217, "D": 0.126, "E": 0.043, "F": 0.012}, "2015": {"B": 0.324, "C": 0.274, "A": 0.248, "D": 0.116, "E": 0.033, "F": 0.005}}, "home_ownership": {"2014": {"MORTGAGE": 0.469, "RENT": 0.429, "OWN": 0.101, "ANY": 0.0}, "2015": {"MORTGAGE": 0.458, "RENT": 0.429, "OWN": 0.112, "ANY": 0.0}}, "purpose": {"2014": {"debt_consolidation": 0.583, "credit_card": 0.247, "home_improvement": 0.053, "other": 0.051, "major_purchase": 0.018, "medical": 0.012}, "2015": {"debt_consolidation": 0.569, "credit_card": 0.25, "home_improvement": 0.061, "other": 0.054, "major_purchase": 0.019, "medical": 0.011}}}}
+{"bad_rate_2014": 0.1373, "bad_rate_2015": 0.1489, "n_2014": 162570, "n_2015": 283026, "mean_by_year": {"fico": {"2014": 694.524, "2015": 695.642}, "dti": {"2014": 17.553, "2015": 18.475}, "inq_last_6mths": {"2014": 0.757, "2015": 0.578}, "annual_inc": {"2014": 72499.658, "2015": 74521.913}, "loan_amnt": {"2014": 12585.599, "2015": 12805.54}, "emp_length_yrs": {"2014": 5.941, "2015": 5.88}, "revol_util": {"2014": 54.033, "2015": 52.281}, "acc_open_past_24mths": {"2014": 4.363, "2015": 4.586}, "credit_age_months": {"2014": 196.93, "2015": 199.101}, "int_rate": {"2014": 12.465, "2015": 11.277}, "score": {"2014": 544.079, "2015": 544.546}}, "share_by_year": {"grade": {"2014": {"B": 0.329, "C": 0.271, "A": 0.217, "D": 0.126, "E": 0.043, "F": 0.012}, "2015": {"B": 0.324, "C": 0.274, "A": 0.248, "D": 0.116, "E": 0.033, "F": 0.005}}, "purpose": {"2014": {"debt_consolidation": 0.583, "credit_card": 0.247, "home_improvement": 0.053, "other": 0.051, "major_purchase": 0.018, "medical": 0.012}, "2015": {"debt_consolidation": 0.569, "credit_card": 0.25, "home_improvement": 0.061, "other": 0.054, "major_purchase": 0.019, "medical": 0.011}}, "home_ownership": {"2014": {"MORTGAGE": 0.469, "RENT": 0.429, "OWN": 0.101, "ANY": 0.0}, "2015": {"MORTGAGE": 0.458, "RENT": 0.429, "OWN": 0.112, "ANY": 0.0}}, "verification_status": {"2014": {"Source Verified": 0.374, "Not Verified": 0.365, "Verified": 0.262}, "2015": {"Source Verified": 0.421, "Not Verified": 0.294, "Verified": 0.285}}}}
 
 2015 年坏账率比 2014 年高 1.16 个百分点。请提出 6 条可能的归因假设。
 要求：
@@ -15,35 +15,4 @@ PROMPT:
 [{"hypothesis": "一句话假设", "variable": "变量名", "mechanism": "机制说明"}]
 
 RAW OUTPUT:
-[
- {
-  "hypothesis": "2015 年申请人信用分下降，客群整体变差",
-  "variable": "fico",
-  "mechanism": "低 FICO 客户占比上升"
- },
- {
-  "hypothesis": "借款人负债收入比上升，还款压力更大",
-  "variable": "dti",
-  "mechanism": "高 DTI 客户占比上升"
- },
- {
-  "hypothesis": "多头借贷加剧，近期征信查询增多",
-  "variable": "inq_last_6mths",
-  "mechanism": "查询多的客户更缺钱"
- },
- {
-  "hypothesis": "平台为扩张放宽准入，低评级贷款占比上升",
-  "variable": "grade",
-  "mechanism": "D-G 级贷款占比上升"
- },
- {
-  "hypothesis": "收入核验比例下降，虚报收入增多",
-  "variable": "verification_status",
-  "mechanism": "未核验客户占比上升"
- },
- {
-  "hypothesis": "同等资质客户的违约倾向上升（环境或定价因素）",
-  "variable": "score",
-  "mechanism": "同分数段坏账率上升"
- }
-]
+[{"hypothesis": "2015年客群平均DTI上升导致偿债压力加大，违约概率上升", "variable": "dti", "mechanism": "DTI从17.553升至18.475，负债收入比越高，借款人可用于偿还贷款的自由现金流越少，一旦收入波动或额外支出出现，更容易发生逾期或违约，从而推高坏账率"}, {"hypothesis": "近24个月新开账户数增多反映借款人信贷需求异常活跃，风险偏高", "variable": "acc_open_past_24mths", "mechanism": "该指标从4.363升至4.586，短期内频繁开户通常是资金紧张、多头借贷或以贷养贷的信号，这类借款人现金流脆弱，违约概率显著高于正常客群"}, {"hypothesis": "平均贷款金额上升加重了月还款负担，提高了违约概率", "variable": "loan_amnt", "mechanism": "贷款金额从12585.6升至12805.5，在收入和期限不变的情况下，月供绝对值增加会挤压借款人可支配现金流，任何收入中断都更容易触发逾期，从而抬高坏账率"}, {"hypothesis": "平均利率下降但坏账率上升，说明定价未能同步反映真实风险，存在系统性风险定价不足", "variable": "int_rate", "mechanism": "int_rate从12.465%降至11.277%，若风险模型或评分卡未及时更新，会导致同等风险等级的借款人获得偏低的利率定价，风险溢价不足使得实际违约损失超出预期，表现为坏账率上升"}, {"hypothesis": "尽管表面等级结构优化（A占比上升、D/E/F占比下降），但同一等级内部风险可能恶化，出现'评级贬值'现象", "variable": "grade", "mechanism": "grade分布显示2015年高等级(A)占比提升、低等级(E/F)占比下降，理论上应降低整体坏账率；若实际坏账率反而上升，说明同一等级内的实际违约率抬高，可能是评分模型区分度下降或审批标准放松所致，掩盖在整体等级结构改善的表象之下"}, {"hypothesis": "验证状态结构变化（Verified/Source Verified占比上升）未能有效降低风险，说明验证流程的风险甄别效力减弱", "variable": "verification_status", "mechanism": "Source Verified占比从37.4%升至42.1%、Not Verified占比下降，理论上验证覆盖率提升应压低坏账率；若结果相反，可能是验证标准放宽、审核质量下降，或验证信息与还款能力的相关性减弱，导致'已验证'客群的实际风险未被有效过滤，反而放大了整体坏账率"}]
