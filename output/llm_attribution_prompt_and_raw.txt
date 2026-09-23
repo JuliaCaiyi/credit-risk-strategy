@@ -1,0 +1,49 @@
+SOURCE: offline preset
+
+SYSTEM:
+你是一名信贷风控策略分析师，擅长对坏账率变化做归因。
+
+PROMPT:
+以下是 Lending Club 36 期贷款 2014 年与 2015 年放款客群的汇总数据（JSON）：
+{"bad_rate_2014": 0.1373, "bad_rate_2015": 0.1489, "n_2014": 162570, "n_2015": 283026, "mean_by_year": {"fico": {"2014": 694.524, "2015": 695.642}, "dti": {"2014": 17.553, "2015": 18.475}, "inq_last_6mths": {"2014": 0.757, "2015": 0.578}, "annual_inc": {"2014": 72499.658, "2015": 74521.913}, "loan_amnt": {"2014": 12585.599, "2015": 12805.54}, "emp_length_yrs": {"2014": 5.941, "2015": 5.88}, "revol_util": {"2014": 54.033, "2015": 52.281}, "acc_open_past_24mths": {"2014": 4.363, "2015": 4.586}, "credit_age_months": {"2014": 196.93, "2015": 199.101}, "int_rate": {"2014": 12.465, "2015": 11.277}, "score": {"2014": 544.079, "2015": 544.546}}, "share_by_year": {"verification_status": {"2014": {"Source Verified": 0.374, "Not Verified": 0.365, "Verified": 0.262}, "2015": {"Source Verified": 0.421, "Not Verified": 0.294, "Verified": 0.285}}, "grade": {"2014": {"B": 0.329, "C": 0.271, "A": 0.217, "D": 0.126, "E": 0.043, "F": 0.012}, "2015": {"B": 0.324, "C": 0.274, "A": 0.248, "D": 0.116, "E": 0.033, "F": 0.005}}, "home_ownership": {"2014": {"MORTGAGE": 0.469, "RENT": 0.429, "OWN": 0.101, "ANY": 0.0}, "2015": {"MORTGAGE": 0.458, "RENT": 0.429, "OWN": 0.112, "ANY": 0.0}}, "purpose": {"2014": {"debt_consolidation": 0.583, "credit_card": 0.247, "home_improvement": 0.053, "other": 0.051, "major_purchase": 0.018, "medical": 0.012}, "2015": {"debt_consolidation": 0.569, "credit_card": 0.25, "home_improvement": 0.061, "other": 0.054, "major_purchase": 0.019, "medical": 0.011}}}}
+
+2015 年坏账率比 2014 年高 1.16 个百分点。请提出 6 条可能的归因假设。
+要求：
+1. 每条假设必须对应下面列表中的一个变量，以便用数据检验：['fico', 'dti', 'inq_last_6mths', 'annual_inc', 'loan_amnt', 'emp_length_yrs', 'revol_util', 'acc_open_past_24mths', 'credit_age_months', 'int_rate', 'grade', 'purpose', 'home_ownership', 'verification_status', 'score']
+2. 说明你认为的作用机制
+3. 只输出 JSON 数组，不要任何其他文字，格式：
+[{"hypothesis": "一句话假设", "variable": "变量名", "mechanism": "机制说明"}]
+
+RAW OUTPUT:
+[
+ {
+  "hypothesis": "2015 年申请人信用分下降，客群整体变差",
+  "variable": "fico",
+  "mechanism": "低 FICO 客户占比上升"
+ },
+ {
+  "hypothesis": "借款人负债收入比上升，还款压力更大",
+  "variable": "dti",
+  "mechanism": "高 DTI 客户占比上升"
+ },
+ {
+  "hypothesis": "多头借贷加剧，近期征信查询增多",
+  "variable": "inq_last_6mths",
+  "mechanism": "查询多的客户更缺钱"
+ },
+ {
+  "hypothesis": "平台为扩张放宽准入，低评级贷款占比上升",
+  "variable": "grade",
+  "mechanism": "D-G 级贷款占比上升"
+ },
+ {
+  "hypothesis": "收入核验比例下降，虚报收入增多",
+  "variable": "verification_status",
+  "mechanism": "未核验客户占比上升"
+ },
+ {
+  "hypothesis": "同等资质客户的违约倾向上升（环境或定价因素）",
+  "variable": "score",
+  "mechanism": "同分数段坏账率上升"
+ }
+]
