@@ -134,7 +134,7 @@ for h in hyps:
     if within_claim:
         within_share = rate / gap
         if within_share >= 0.5:
-            verdict = "成立（按组内效应判定）：同一组客户坏账率上升能解释主要部分"
+            verdict = "组内效应为正（该标准区分力弱，结论见分组明细与人工校验记录）"
         elif within_share >= 0.2:
             verdict = "部分成立（按组内效应判定）：有贡献但不是主因"
         else:
@@ -164,5 +164,9 @@ for _, r in res.iterrows():
         print("    " + r["detail"].replace("\n", "\n    ") + "\n")
 ok = res["verdict"].str.startswith("成立").sum()
 part = res["verdict"].str.startswith("部分").sum()
-print(f"\n共 {len(res)} 条假设：成立 {ok} 条，部分成立 {part} 条，不成立或无法检验 {len(res) - ok - part} 条")
+pos = res["verdict"].str.startswith("组内效应为正").sum()
+print(f"\n共 {len(res)} 条假设：成立 {ok} 条，部分成立 {part} 条，组内效应为正（待人工判断）{pos} 条，"
+      f"不成立或无法检验 {len(res) - ok - part - pos} 条")
+if pos:
+    print("组内型假设的最终结论见 output/attribution_human_review.md")
 print("完整 prompt 与模型原始输出已存 output/llm_attribution_prompt_and_raw.txt")
