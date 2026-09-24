@@ -72,8 +72,12 @@ single.to_csv("output/single_cutoff_oos.csv", index=False)
 oos = evaluate(te, cut_opt)
 hind = evaluate(te, cut_hind)
 intu = evaluate(te, cut_int)
-print(f"\n样本外：收益最优分数线比直觉分数线多赚 ${(oos['profit'] - intu['profit']) / 1e6:.1f}M，"
-      f"比全部通过多赚 ${(oos['profit'] - te['pnl'].sum()) / 1e6:.1f}M")
+def more_less(diff):
+    return f"{'多赚' if diff >= 0 else '少赚'} ${abs(diff) / 1e6:.1f}M"
+
+
+print(f"\n样本外：收益最优分数线比直觉分数线{more_less(oos['profit'] - intu['profit'])}，"
+      f"比全部通过{more_less(oos['profit'] - te['pnl'].sum())}")
 print(f"阈值漂移代价：事后上限 - 样本外 = ${(hind['profit'] - oos['profit']) / 1e6:.1f}M")
 
 # 边际分析：在选阈值的同一份数据（2014）上、以 2.5 个百分点为一档，避免 1% 小切片的噪音
