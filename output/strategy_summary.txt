@@ -1,6 +1,6 @@
-cost K=0.03, years=1.5; verify catch=0.4, drop=0.1, cost=$30
-single optimum: score>=523.6 approve=0.8700 bad=0.1273 profit=84815494
-intuitive (bad<=10%): approve=0.6314 profit=75687032
-constrained approve>=0.85: single=84812697 tier=100714153 lift=0.1875
-tier thresholds: t1=519.4 t2=533.3 verify=0.2000
-2014 cutoff on 2015: profit=79171869 vs optimum 84815494
+selection=2014, evaluation=2015; cost K=0.03, years=1.5
+single cutoff (2014-opt) 510.8: 2015 approve=0.9718 bad=0.1427 profit=79171869
+intuitive cutoff 533.8: 2015 profit=80205079; approve-all profit=74339566
+hindsight 2015 optimum 523.6: profit=84815494; drift cost=5643625
+tier t1=501.8 t2=528.9: 2015 profit=98027342 lift=0.2382; breakeven catch=0.1120
+tier lift range under verify assumptions: -0.0019 to 0.2816
